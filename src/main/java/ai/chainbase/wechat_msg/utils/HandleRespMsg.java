@@ -24,30 +24,30 @@ import java.util.Map;
 public class HandleRespMsg {
 
     public static Map getRespMsg(Map map, String url) throws AesException {
-        String respMsg;
+        String respMsg = "";
         String fromUserName = (String) map.get("FromUserName");
         String toUserName = (String) map.get("ToUserName");
         String createTime = (String) map.get("CreateTime");
         String msgType = (String) map.get("MsgType");
         String reply;
         String content = null;
-        if(msgType.equalsIgnoreCase("text")){
+        if (msgType.equalsIgnoreCase("text")) {
             content = (String) map.get("Content");
-            reply = getReplyMsg(fromUserName,content,url);
-        }else if(msgType.equalsIgnoreCase("image")){
-            reply="暂不支持图片信息识别，请用文字描述";
-        }else if(msgType.equalsIgnoreCase("voice")){
-            reply="暂不支持语音信息识别，请用文字描述";
-        }else if(msgType.equalsIgnoreCase("video")){
-            reply="暂不支持视频信息识别，请用文字描述";
-        }else if(msgType.equalsIgnoreCase("shortvideo")){
-            reply="暂不支持短视频信息识别，请用文字描述";
-        }else if(msgType.equalsIgnoreCase("location")){
-            reply="暂不支持定位信息识别，请用文字描述";
-        }else if(msgType.equalsIgnoreCase("link")){
-            reply="暂不支持链接信息识别，请用文字描述";
-        }else{
-            reply="暂不支持该格式的信息识别，请用文字描述";
+            reply = getReplyMsg(fromUserName, content, url);
+        } else if (msgType.equalsIgnoreCase("image")) {
+            reply = "暂不支持图片信息识别，请用文字描述";
+        } else if (msgType.equalsIgnoreCase("voice")) {
+            reply = "暂不支持语音信息识别，请用文字描述";
+        } else if (msgType.equalsIgnoreCase("video")) {
+            reply = "暂不支持视频信息识别，请用文字描述";
+        } else if (msgType.equalsIgnoreCase("shortvideo")) {
+            reply = "暂不支持短视频信息识别，请用文字描述";
+        } else if (msgType.equalsIgnoreCase("location")) {
+            reply = "暂不支持定位信息识别，请用文字描述";
+        } else if (msgType.equalsIgnoreCase("link")) {
+            reply = "暂不支持链接信息识别，请用文字描述";
+        } else {
+            reply = "暂不支持该格式的信息识别，请用文字描述";
         }
         Long timestamp = new Date().getTime();
         RespTextMsg respTextMsg = new RespTextMsg();
@@ -58,16 +58,17 @@ public class HandleRespMsg {
         respTextMsg.setMsgType("text");
         respTextMsg.setFuncFlag("0");
 
-        String xmlMsg = parse2Xml(respTextMsg,RespTextMsg.class);
-        log.info("公众号回复用户信息："+xmlMsg);
+        if (reply != null && !reply.equals("")) {
+            String xmlMsg = parse2Xml(respTextMsg, RespTextMsg.class);
+            log.info("公众号回复用户信息：" + xmlMsg);
 
-        //加密回复信息，返回给微信
-        WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(
-                TokenEnum.TOKEN.getValue(),
-                TokenEnum.ENCODING_AES_KEY.getValue(),
-                TokenEnum.APP_ID.getValue());
-        respMsg = wxBizMsgCrypt.encryptMsg(xmlMsg,timestamp+"","lianji"+timestamp);
-
+            //加密回复信息，返回给微信
+            WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(
+                    TokenEnum.TOKEN.getValue(),
+                    TokenEnum.ENCODING_AES_KEY.getValue(),
+                    TokenEnum.APP_ID.getValue());
+            respMsg = wxBizMsgCrypt.encryptMsg(xmlMsg, timestamp + "", "lianji" + timestamp);
+        }
         //储存通讯记录
         MsgRecord msgRecord = MsgRecord.builder()
                 .fromUserName(fromUserName)
@@ -79,22 +80,23 @@ public class HandleRespMsg {
                 .build();
 
         Map resultMap = new HashMap();
-        resultMap.put("respMsg",respMsg);
-        resultMap.put("msgRecord",msgRecord);
+        resultMap.put("respMsg", respMsg);
+        resultMap.put("msgRecord", msgRecord);
         return resultMap;
     }
 
     /**
      * 根据接收的信息，做出回复
+     *
      * @param receiveMsg
      * @return
      */
-    public static String getReplyMsg(String fromUserName,String receiveMsg,String url){
+    public static String getReplyMsg(String fromUserName, String receiveMsg, String url) {
         JSONObject param = new JSONObject();
-        param.put("id",fromUserName);
-        param.put("question",receiveMsg);
-        String reply = HttpUtil.sendPostJson(url,param.toJSONString());
-        log.info("根据用户消息得到的回复："+reply);
+        param.put("id", fromUserName);
+        param.put("question", receiveMsg);
+        String reply = HttpUtil.sendPostJson(url, param.toJSONString());
+        log.info("根据用户消息得到的回复：" + reply);
         return reply;
     }
 

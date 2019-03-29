@@ -51,7 +51,7 @@ public class Controller {
             Object msgRecord =  resultMap.get("msgRecord");
             if (msgRecord != null)
                 mapper.insert((MsgRecord) msgRecord);
-            if (respMsg != null)
+            if (!respMsg.equals(""))
                 return respMsg;
         }
         return "success";
