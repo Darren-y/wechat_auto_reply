@@ -58,16 +58,14 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.2.7</version>
+			<version>1.2.55</version>
 		</dependency>
 
 		<!-- dom对象读取写入xml文件 -->
 		<dependency>
-			<groupId>ai.chainbase</groupId>
+			<groupId>org.dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>2.0.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/dom4j-2.0.2.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
@@ -112,7 +110,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.1</version>
+			<version>4.5.7</version>
 		</dependency>
 	</dependencies>
 
