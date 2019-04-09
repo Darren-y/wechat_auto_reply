@@ -23,32 +23,51 @@ import java.util.Map;
 @Log4j2
 public class HandleRespMsg {
 
-    public static Map getRespMsg(Map map, String url) throws AesException {
+    public Map getRespMsg(Map map, String url) throws AesException {
         String respMsg = "";
         String fromUserName = (String) map.get("FromUserName");
         String toUserName = (String) map.get("ToUserName");
         String createTime = (String) map.get("CreateTime");
         String msgType = (String) map.get("MsgType");
-        String reply;
+        String reply = null;
         String content = null;
         if (msgType.equalsIgnoreCase("text")) {
             content = (String) map.get("Content");
-            reply = getReplyMsg(fromUserName, content, url);
-        } else if (msgType.equalsIgnoreCase("image")) {
-            reply = "暂不支持图片信息识别，请用文字描述";
-        } else if (msgType.equalsIgnoreCase("voice")) {
-            reply = "暂不支持语音信息识别，请用文字描述";
-        } else if (msgType.equalsIgnoreCase("video")) {
-            reply = "暂不支持视频信息识别，请用文字描述";
-        } else if (msgType.equalsIgnoreCase("shortvideo")) {
-            reply = "暂不支持短视频信息识别，请用文字描述";
-        } else if (msgType.equalsIgnoreCase("location")) {
-            reply = "暂不支持定位信息识别，请用文字描述";
-        } else if (msgType.equalsIgnoreCase("link")) {
-            reply = "暂不支持链接信息识别，请用文字描述";
-        } else {
-            reply = "暂不支持该格式的信息识别，请用文字描述";
         }
+        Object cacheFlag = MyCacheUtil.get(fromUserName);
+
+        if (content!=null && content.equals("0")) {
+            //退出问答
+            setStartFlag("0", fromUserName);
+            reply = "已退出服务，谢谢使用";
+        } else {
+            if (content != null && cacheFlag != null) {
+                String[] cacheFlags = String.valueOf(cacheFlag).split(":");
+                Long timeFlag = Long.parseLong(cacheFlags[1]);
+                String questionType = cacheFlags[0];
+                if (!isExpired(timeFlag)) {
+                    reply = getReply(questionType, fromUserName, content, url);
+                    reply = (reply == null || reply.equals("")) ? "请详细描述您的提问" : reply;
+                    //重置有效时间
+                    setStartFlag(questionType, fromUserName);
+                } else {
+                    reply = "由于您长时间未操作，已退出服务";
+                    setStartFlag("0", fromUserName);
+                }
+            } else if (content == null && cacheFlag != null) {
+                //在问答中发送非文本消息
+                reply = setNotTextMsgReply(msgType);
+            } else if (content != null && cacheFlag == null) {
+                //没有进入问答，根据用户消息，判断是否进入问答
+                if(content.equals("1")){
+                    reply = "链基智能健康小助手为您服务，请输入您的提问：";
+                    setStartFlag("1", fromUserName);
+                }
+            }else{
+                log.info("《《《 待处理 》》》");
+            }
+        }
+
         Long timestamp = new Date().getTime();
         RespTextMsg respTextMsg = new RespTextMsg();
         respTextMsg.setFromUserName(toUserName);
@@ -72,7 +91,6 @@ public class HandleRespMsg {
         //储存通讯记录
         MsgRecord msgRecord = MsgRecord.builder()
                 .fromUserName(fromUserName)
-                .msgType(msgType)
                 .createTime(Long.parseLong(createTime))
                 .content(content)
                 .replyTime(timestamp)
@@ -85,13 +103,100 @@ public class HandleRespMsg {
         return resultMap;
     }
 
+
     /**
-     * 根据接收的信息，做出回复
+     * 把公众号回复的消息转换成XML格式
+     */
+    public String parse2Xml(RespMsg msg, Class child) {
+        XStream xStream = new XStream();
+        xStream.alias("xml", child);
+        return xStream.toXML(msg);
+    }
+
+    /**
+     * 设置问答有效时间+退出问答
+     *
+     * @param questionType
+     * @param fromUserName
+     */
+    private void setStartFlag(String questionType, String fromUserName) {
+        switch (questionType){
+            case "0":
+                MyCacheUtil.remove(fromUserName);
+                break;
+            case "1":
+                //设置问答有效时间，两次请求时间间隔超过2min退出问答
+                MyCacheUtil.put(fromUserName, "1:" + (new Date().getTime() + 120000));
+                break;
+        }
+    }
+
+    /**
+     * 回复非文本提问
+     *
+     * @param msgType
+     * @return
+     */
+    private String setNotTextMsgReply(String msgType) {
+        switch (msgType) {
+            case "image":
+                return "暂不支持图片信息识别，请用文字描述";
+            case "voice":
+                return "暂不支持语音信息识别，请用文字描述";
+            case "video":
+                return "暂不支持视频信息识别，请用文字描述";
+            case "shortvideo":
+                return "暂不支持短视频信息识别，请用文字描述";
+            case "location":
+                return "暂不支持定位信息识别，请用文字描述";
+            case "link":
+                return "暂不支持链接信息识别，请用文字描述";
+            default:
+                return "暂不支持该格式的信息识别，请用文字描述";
+        }
+    }
+
+    /**
+     * 判断提问是否超时
+     *
+     * @param time
+     * @return
+     */
+    private boolean isExpired(Long time) {
+        if (time != null) {
+            if (time >= (new Date().getTime())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * 根据提问类型调用不同的接口
+     *
+     * @param questionType
+     * @param fromUserName
+     * @param content
+     * @param url
+     * @return
+     */
+    private String getReply(String questionType, String fromUserName, String content, String url) {
+        switch (questionType) {
+            case "1":
+                return getReplyMsg(fromUserName, content, url);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * 调用健康问答接口
      *
      * @param receiveMsg
      * @return
      */
-    public static String getReplyMsg(String fromUserName, String receiveMsg, String url) {
+    public String getReplyMsg(String fromUserName, String receiveMsg, String url) {
         JSONObject param = new JSONObject();
         param.put("id", fromUserName);
         param.put("question", receiveMsg);
@@ -100,12 +205,4 @@ public class HandleRespMsg {
         return reply;
     }
 
-    /**
-     * 把公众号回复的消息转换成XML格式
-     */
-    public static String parse2Xml(RespMsg msg, Class child) {
-        XStream xStream = new XStream();
-        xStream.alias("xml", child);
-        return xStream.toXML(msg);
-    }
 }

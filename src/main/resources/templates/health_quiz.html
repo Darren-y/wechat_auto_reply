@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>quiz</title>
+</head>
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<body>
+<div class="container" style="margin-top: 50px">
+
+    <div class="input-group">
+        <label for="question"></label>
+        <span class="input-group-addon">Q</span>
+        <input type="text" class="form-control" placeholder="请输入提问内容"
+               id="question" name="question">
+    </div>
+    <div style="text-align: right; margin-right: 10px;padding-top: 10px">
+        <button type="button" class="btn btn-primary" style="" id="b1" onclick="query($('#question').val())">提问
+        </button>
+    </div>
+
+    <div style="padding-top: 10px">
+        <textarea style="resize: none" class="form-control" rows="15" id="answer" readonly ></textarea>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    function query(question) {
+        $.ajax({
+            url: "/quiz/do",
+            async: true,
+            type: "POST",
+            data: {
+                "question": question
+            },
+            success: showAnswer,
+            error: showError(),
+            dataType: "json"
+        });
+    }
+
+    function showAnswer(data) {
+        $("#answer").html(data.answer);
+    }
+
+    function showError() {
+        $("#answer").html("服务器暂忙");
+    }
+</script>
+</html>

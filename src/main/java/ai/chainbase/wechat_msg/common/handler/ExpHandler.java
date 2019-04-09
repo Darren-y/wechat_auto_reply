@@ -22,21 +22,21 @@ public class ExpHandler {
 
     @ExceptionHandler(value = AesException.class)
     Object handleAesException(AesException e, HttpServletRequest request){
-        log.error(request.getRequestURI()+": "+e.getMessage());
+        log.error(request.getRequestURI()+": "+e);
         //直接回复微信success
         return "success";
     }
 
     @ExceptionHandler(value = UnsupportedEncodingException.class)
     Object handleUnsupportedEncodingException(UnsupportedEncodingException e, HttpServletRequest request){
-        log.error(request.getRequestURI()+": "+e.getMessage());
+        log.error(request.getRequestURI()+": "+e);
         //直接回复微信success
         return "success";
     }
 
     @ExceptionHandler(value = NoSuchAlgorithmException.class)
     Object handleNoSuchAlgorithmException(NoSuchAlgorithmException e, HttpServletRequest request){
-        log.error(request.getRequestURI()+": "+e.getMessage());
+        log.error(request.getRequestURI()+": "+e);
         //直接回复微信success
         return "success";
     }
@@ -49,7 +49,15 @@ public class ExpHandler {
      */
     @ExceptionHandler(value = SQLException.class)
     Object handleSQLException(SQLException e, HttpServletRequest request){
-        log.error(request.getRequestURI()+": "+e.getMessage());
+        log.error(request.getRequestURI()+": "+e);
+        //直接回复微信success
+        return "success";
+    }
+
+
+    @ExceptionHandler(value = NullPointerException.class)
+    Object handleNullPointerException(NullPointerException e,HttpServletRequest request){
+        log.error(request.getRequestURI()+": "+e);
         //直接回复微信success
         return "success";
     }

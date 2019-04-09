@@ -34,10 +34,6 @@ public class MsgRecord implements Serializable {
      */
     private String fromUserName;
 
-    /**
-     * 消息类型，非text类型的消息，content为空
-     */
-    private String msgType;
 
     /**
      * 消息发送时间

@@ -7,6 +7,7 @@ import ai.chainbase.wechat_msg.model.request_msg.BaseWxMsg;
 import ai.chainbase.wechat_msg.utils.CheckUtil;
 import ai.chainbase.wechat_msg.utils.HandleReqMsg;
 import ai.chainbase.wechat_msg.utils.HandleRespMsg;
+import ai.chainbase.wechat_msg.utils.MyCacheUtil;
 import com.qq.weixin.mp.aes.AesException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -24,7 +26,8 @@ import java.util.Map;
  * @Version: 1.0
  * @Description:
  */
-@RestController
+@RestController()
+@RequestMapping("/wechat")
 @Log4j2
 public class Controller {
 
@@ -46,9 +49,10 @@ public class Controller {
     public String autoReply(HttpServletRequest request, BaseWxMsg baseWxMsg) throws AesException {
         Map map = HandleReqMsg.getDecryptWxMsg(request, baseWxMsg);
         if (map.size() > 0) {
-            Map resultMap = HandleRespMsg.getRespMsg(map,serverSetting.getGetAnswerUrl());
+            HandleRespMsg handleRespMsg = new HandleRespMsg();
+            Map resultMap = handleRespMsg.getRespMsg(map, serverSetting.getGetAnswerUrl());
             String respMsg = (String) resultMap.get("respMsg");
-            Object msgRecord =  resultMap.get("msgRecord");
+            Object msgRecord = resultMap.get("msgRecord");
             if (msgRecord != null)
                 mapper.insert((MsgRecord) msgRecord);
             if (!respMsg.equals(""))
@@ -71,7 +75,7 @@ public class Controller {
         String timestamp = req.getParameter("timestamp");
         String echostr = req.getParameter("echostr");
         String nonce = req.getParameter("nonce");
-
+        log.info("开始微信接口验证");
         if (signature != null && !signature.equals("") &&
                 timestamp != null && !timestamp.equals("") &&
                 nonce != null && !nonce.equals("")) {
@@ -87,5 +91,6 @@ public class Controller {
         }
         return null;
     }
+
 
 }

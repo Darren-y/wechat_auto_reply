@@ -8,8 +8,9 @@ package ai.chainbase.wechat_msg.common.enums;
  */
 public enum TokenEnum {
     TOKEN("lianji321"),
-    ENCODING_AES_KEY("LWQaMtJjFAdpbdAIW9BvgwiEh3fIRLl55nHknjf0NU2"),
+    ENCODING_AES_KEY("KW97cclI8ONWxqTxIMh1pjUjJDepmcqFL8HNSkR0IOX"),
     APP_ID("wxe90936470ccef57b");
+
 
     private String value;
 

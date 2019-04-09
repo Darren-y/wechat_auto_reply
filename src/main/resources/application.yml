@@ -28,10 +28,14 @@ spring:
       pool-prepared-statements: true
       max-open-prepared-statements: 100
   resources:
-    static-locations: classpath:/resources/lib
+    static-locations: classpath:/resources/lib,classpath:/templates
+  http:
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
 
 mybatis-plus:
-  mapper-locations: classpath:mapper/*Mapper.xml
   global-config:
     db-config:
       field-strategy: not_empty
